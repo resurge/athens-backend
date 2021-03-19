@@ -1,5 +1,5 @@
 (ns athens-sync.env
-  (:require [clojure.tools.logging :as log]))
+  (:require [taoensso.timbre :as log]))
 
 (def defaults
   {:init

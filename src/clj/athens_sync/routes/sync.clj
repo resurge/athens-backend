@@ -1,12 +1,8 @@
 (ns athens-sync.routes.sync
   (:require
-    [athens-sync.layout :as layout]
-    [clojure.java.io :as io]
-    [athens-sync.middleware :as middleware]
     [ring.util.response]
-    [ring.util.http-response :as response]
+    [ring.middleware.defaults :as ring-defaults]
     [compojure.core :as comp :refer (defroutes GET POST)]
-    [compojure.route :as route]
     [taoensso.sente :as sente]
     [clj-time.core :as time-c]
     [clj-time.coerce :as time-co]
@@ -31,8 +27,8 @@
 
 
 (def main-ring-handler
-  (ring.middleware.defaults/wrap-defaults
-    ring-routes (assoc-in ring.middleware.defaults/site-defaults
+  (ring-defaults/wrap-defaults
+    ring-routes (assoc-in ring-defaults/site-defaults
                           [:security :anti-forgery] false)))
 
 
@@ -78,8 +74,8 @@
         (swap! current-presence (fn [curr]
                                   (->> curr (s/select
                                               [s/ALL #(< (- (time-co/to-long (time-c/now))
-                                                          (-> % second :last-seen-ts))
-                                                        10000)])
+                                                            (-> % second :last-seen-ts))
+                                                         10000)])
                                        (into {}))))
 
         ((:send-fn channel-socket) uid

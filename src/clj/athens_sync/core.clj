@@ -1,15 +1,14 @@
 (ns athens-sync.core
   (:require
-    [athens-sync.handler :as handler]
     [athens-sync.nrepl :as nrepl]
-    [luminus.http-server :as http]
     [athens-sync.config :refer [env]]
     [clojure.tools.cli :refer [parse-opts]]
-    [clojure.tools.logging :as log]
+    [taoensso.timbre :as log]
     [mount.core :as mount]
     [org.httpkit.server :as http-kit]
     [athens-sync.routes.sync :as sync])
   (:gen-class))
+
 
 ;; log uncaught exceptions in threads
 (Thread/setDefaultUncaughtExceptionHandler
@@ -19,18 +18,21 @@
                   :exception ex
                   :where (str "Uncaught exception on" (.getName thread))}))))
 
+
 (def cli-options
   [["-p" "--port PORT" "Port number"
     :parse-fn #(Integer/parseInt %)]])
 
+
 (mount/defstate ^{:on-reload :noop} http-server
   :start
   (http-kit/run-server
-    (handler/app)
+    (var sync/main-ring-handler)
     {:port 3010})
 
   :stop
   (http-server))
+
 
 (mount/defstate ^{:on-reload :noop} repl-server
   :start
@@ -46,6 +48,7 @@
   (doseq [component (:stopped (mount/stop))]
     (log/info component "stopped"))
   (shutdown-agents))
+
 
 (defn start-app [args]
   (sync/start-websocket!)
