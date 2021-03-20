@@ -1,5 +1,8 @@
 (ns athens-sync.routes.sync
   (:require
+    [dat.sync.server]
+    [athens-sync.db.core :as db]
+    [datahike.api :as d]
     [ring.util.response]
     [ring.middleware.defaults :as ring-defaults]
     [compojure.core :as comp :refer (defroutes GET POST)]
@@ -89,3 +92,67 @@
     (doto (Thread. ticker!)
       (.start))))
 
+
+;; txns
+
+
+(defn broadcast! [event]
+  (doseq [uid (:any @(:connected-uids channel-socket))]
+    ((:send-fn channel-socket) uid event)))
+
+
+(defn apply-remote-tx!
+  "Takes a client transaction and transacts it"
+  [tx]
+  (let [tx' (mapv (partial dat.sync.server/translate-tx-form @db/conn dat.sync.server/tempid-map) tx)]
+    (d/transact db/conn tx')))
+
+
+(defmethod -event-msg-handler :dat.sync.client/tx
+  [{:as ev-msg :keys [?data]}]
+  (apply-remote-tx! ?data))
+
+
+(defn get-bootstrap []
+  (d/q '[:find (pull ?e [*])
+         :where
+         (or
+           [?e :schema/version _]
+           [?e :block/uid _]
+           [?e :block/title _]
+           [?e :block/string _]
+           [?e :node/title _]
+           [?e :attrs/lookup _]
+           [?e :block/children _]
+           [?e :block/refs _]
+           [?e :create/time _]
+           [?e :edit/time _]
+           [?e :block/open _]
+           [?e :block/order _]
+           [?e :from-history _]
+           [?e :from-undo-redo _])]
+       @db/conn))
+
+
+(defmethod -event-msg-handler :dat.sync.client/request-bootstrap
+  [{:keys [uid]}]
+  ((:send-fn channel-socket) uid [:dat.sync.client/bootstrap
+                                  (->> (d/datoms @db/conn :eavt)
+                                       (remove (fn [[_e a]]
+                                                 (contains? #{:db/cardinality :db/valueType :db/ident :db/unique}
+                                                            a)))
+                                       (mapv (fn [[e a v _t]]
+                                               [:db/add e a v])))]))
+
+
+
+(defn handle-transaction-report! [tx-report]
+  (broadcast! [:dat.sync.client/recv-remote-tx
+               (->> tx-report :tx-data
+                    (map (fn [[e a v t b]]
+                           [({true :db/add false :db/retract} b) e a v])))]))
+
+
+(defn start-watch! []
+  (db/init!)
+  (d/listen db/conn :send-tx handle-transaction-report!))

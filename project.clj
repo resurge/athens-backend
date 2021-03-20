@@ -29,6 +29,11 @@
                  [ring/ring-defaults "0.3.2"]
                  [compojure "1.6.2"]
 
+                 ;; db
+                 [io.replikativ/datahike "0.3.3"]
+                 [datascript-transit "0.3.0"]
+                 [datsync "0.0.1-alpha2-SNAPSHOT"]
+
                  ;; ds works
                  [com.rpl/specter "1.1.2"]
 

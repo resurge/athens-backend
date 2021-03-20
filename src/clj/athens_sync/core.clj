@@ -6,7 +6,8 @@
     [taoensso.timbre :as log]
     [mount.core :as mount]
     [org.httpkit.server :as http-kit]
-    [athens-sync.routes.sync :as sync])
+    [athens-sync.routes.sync :as sync]
+    [athens-sync.db.core])
   (:gen-class))
 
 
