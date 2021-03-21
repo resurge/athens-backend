@@ -1,13 +1,13 @@
 (ns athens-sync.core
   (:require
-    [athens-sync.nrepl :as nrepl]
     [athens-sync.config :refer [env]]
+    [athens-sync.db.core :as db]
+    [athens-sync.nrepl :as nrepl]
+    [athens-sync.routes.sync :as sync]
     [clojure.tools.cli :refer [parse-opts]]
-    [taoensso.timbre :as log]
     [mount.core :as mount]
     [org.httpkit.server :as http-kit]
-    [athens-sync.routes.sync :as sync]
-    [athens-sync.db.core])
+    [taoensso.timbre :as log])
   (:gen-class))
 
 
@@ -52,9 +52,11 @@
 
 
 (defn start-app [args]
+  (db/init-db!)
   (sync/start-websocket!)
   (sync/start-router!)
   (sync/start-broadcast-ticker!)
+  (sync/start-db-watch!)
   (doseq [component (-> args
                         (parse-opts cli-options)
                         mount/start-with-args

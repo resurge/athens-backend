@@ -1,24 +1,33 @@
 (ns athens-sync.routes.sync
   (:require
-    [dat.sync.server]
+    [athens-sync.datsync-utils :as dat-s]
     [athens-sync.db.core :as db]
-    [datahike.api :as d]
-    [ring.util.response]
-    [ring.middleware.defaults :as ring-defaults]
-    [compojure.core :as comp :refer (defroutes GET POST)]
-    [taoensso.sente :as sente]
-    [clj-time.core :as time-c]
     [clj-time.coerce :as time-co]
-    [taoensso.sente.server-adapters.http-kit :refer (get-sch-adapter) :as http]
-    [clojure.core.async :as async :refer (<! go-loop)]
-    [com.rpl.specter :as s]))
+    [clj-time.core :as time-c]
+    [com.rpl.specter :as s]
+    [compojure.core :refer (defroutes GET POST)]
+    [dat.sync.server]
+    [datahike.api :as d]
+    [ring.middleware.defaults :as ring-defaults]
+    [taoensso.sente :as sente]
+    [taoensso.sente.server-adapters.http-kit :refer (get-sch-adapter)]
+    [taoensso.timbre :as log]))
 
+
+;;-------------------------------------------------------------------
+;;--- Sockets setup ---
 
 (declare channel-socket)
 (def current-presence (atom nil))
 
 
+(defn broadcast! [event]
+  (doseq [uid (:any @(:connected-uids channel-socket))]
+    ((:send-fn channel-socket) uid event)))
+
+
 (defn start-websocket! []
+  #_:clj-kondo/ignore
   (defonce channel-socket
     (sente/make-channel-socket-server!
       (get-sch-adapter) {:packer :edn :csrf-token-fn #(and % (identity "x"))})))
@@ -39,120 +48,104 @@
 
 
 (defn event-msg-handler
-  [{:as ev-msg :keys [id ?data event]}]
+  [{:as ev-msg}]
   (-event-msg-handler ev-msg))
 
 
 (defmethod -event-msg-handler :default
-  [{:keys [event id ?data ring-req ?reply-fn send-fn]}]
-  (println (str "Unhandled event:" id ?data)))
+  [{:keys [id ?data]}]
+  (log/info (str "Unhandled event:" id ?data)))
 
 
 (defmethod -event-msg-handler :chsk/uidport-open
   [{:keys [uid client-id]}]
-  (println "New connection:" uid client-id))
+  (log/info "New connection:" uid client-id))
 
 
 (defmethod -event-msg-handler :chsk/uidport-close
   [{:keys [uid]}]
-  (println "Disconnected:" uid))
+  (log/info "Disconnected:" uid))
 
 
 (defmethod -event-msg-handler :user/details
   [{:keys [?data]}]
-  (swap! current-presence (fn [curr]
-                            (assoc curr (:random/id ?data)
-                                        (assoc ?data :last-seen-ts (time-co/to-long (time-c/now)))))))
+  (swap! current-presence
+         (fn [curr]
+           (assoc curr (:random/id ?data)
+                       (assoc ?data :last-seen-ts (time-co/to-long (time-c/now)))))))
 
 
 (defn start-router! []
-  (defonce router (sente/start-chsk-router! (:ch-recv channel-socket) event-msg-handler)))
+  #_:clj-kondo/ignore
+  (defonce router (sente/start-chsk-router!
+                    (:ch-recv channel-socket) event-msg-handler)))
 
 
-(defn ticker! []
+;;-------------------------------------------------------------------
+;;--- presence ticker ---
+
+(defn ticker!
+  "Send current presence to all clients. Remove stale clients
+   who haven't sent their ping in the last 10seconds"
+  []
   (while true
-    (Thread/sleep 1000)
+    (Thread/sleep 500)
     (try
-      (doseq [uid (:any @(:connected-uids channel-socket))]
-        (swap! current-presence (fn [curr]
-                                  (->> curr (s/select
-                                              [s/ALL #(< (- (time-co/to-long (time-c/now))
-                                                            (-> % second :last-seen-ts))
-                                                         10000)])
-                                       (into {}))))
-
-        ((:send-fn channel-socket) uid
-         [:presence/now @current-presence]))
+      ;; remove stale users
+      (swap! current-presence
+             (fn [curr]
+               (->> curr (s/select
+                           [s/ALL #(< (- (time-co/to-long (time-c/now))
+                                         (-> % second :last-seen-ts))
+                                      10000)])
+                    (into {}))))
+      (broadcast! [:presence/now @current-presence])
       (catch Exception ex
         (println ex)))))
 
 
 (defn start-broadcast-ticker! []
+  #_:clj-kondo/ignore
   (defonce ticker-thread
     (doto (Thread. ticker!)
       (.start))))
 
 
-;; txns
-
-
-(defn broadcast! [event]
-  (doseq [uid (:any @(:connected-uids channel-socket))]
-    ((:send-fn channel-socket) uid event)))
-
-
-(defn apply-remote-tx!
-  "Takes a client transaction and transacts it"
-  [tx]
-  (let [tx' (mapv (partial dat.sync.server/translate-tx-form @db/conn dat.sync.server/tempid-map) tx)]
-    (d/transact db/conn tx')))
+;;-------------------------------------------------------------------
+;;--- Transaction related --
 
 
 (defmethod -event-msg-handler :dat.sync.client/tx
-  [{:as ev-msg :keys [?data]}]
-  (apply-remote-tx! ?data))
+  [{:keys [?data]}]
+  (dat-s/apply-remote-tx! ?data))
 
 
-(defn get-bootstrap []
-  (d/q '[:find (pull ?e [*])
-         :where
-         (or
-           [?e :schema/version _]
-           [?e :block/uid _]
-           [?e :block/title _]
-           [?e :block/string _]
-           [?e :node/title _]
-           [?e :attrs/lookup _]
-           [?e :block/children _]
-           [?e :block/refs _]
-           [?e :create/time _]
-           [?e :edit/time _]
-           [?e :block/open _]
-           [?e :block/order _]
-           [?e :from-history _]
-           [?e :from-undo-redo _])]
-       @db/conn))
+(defn get-bootstrap-datoms
+  "Get all current datoms for current datahike implementation,
+   this will transact all data to client"
+  []
+  (->> (d/datoms @db/dh-conn :eavt)
+       ;; no need to transact schema as we do it already for front end
+       ;; while setting up datascript
+       (remove (fn [[_e a]]
+                 (contains? #{:db/cardinality :db/valueType :db/ident :db/unique}
+                            a)))
+       (mapv (fn [[e a v _t]]
+               [:db/add e a v]))))
 
 
 (defmethod -event-msg-handler :dat.sync.client/request-bootstrap
   [{:keys [uid]}]
-  ((:send-fn channel-socket) uid [:dat.sync.client/bootstrap
-                                  (->> (d/datoms @db/conn :eavt)
-                                       (remove (fn [[_e a]]
-                                                 (contains? #{:db/cardinality :db/valueType :db/ident :db/unique}
-                                                            a)))
-                                       (mapv (fn [[e a v _t]]
-                                               [:db/add e a v])))]))
+  ((:send-fn channel-socket)
+   uid [:dat.sync.client/bootstrap (get-bootstrap-datoms)]))
 
 
-
-(defn handle-transaction-report! [tx-report]
+(defn handle-transaction-report!
+  "Send all transactions to all clients"
+  [tx-report]
   (broadcast! [:dat.sync.client/recv-remote-tx
-               (->> tx-report :tx-data
-                    (map (fn [[e a v t b]]
-                           [({true :db/add false :db/retract} b) e a v])))]))
+               (dat-s/tx-report->datoms tx-report)]))
 
 
-(defn start-watch! []
-  (db/init!)
-  (d/listen db/conn :send-tx handle-transaction-report!))
+(defn start-db-watch! []
+  (d/listen db/dh-conn :send-tx handle-transaction-report!))

@@ -32,7 +32,7 @@
                  ;; db
                  [io.replikativ/datahike "0.3.3"]
                  [datascript-transit "0.3.0"]
-                 [datsync "0.0.1-alpha2-SNAPSHOT"]
+                 [datsync "0.0.1-alpha2-SNAPSHOT" :exclusions [datascript]]
 
                  ;; ds works
                  [com.rpl/specter "1.1.2"]
@@ -55,7 +55,12 @@
 
   :plugins [[lein-pprint "1.3.2"]
             [lein-ancient "0.7.0"]
-            [cider/cider-nrepl "0.25.9"]]
+            [cider/cider-nrepl "0.25.9"]
+            [lein-nsort "0.1.14"]]
+
+  :nsort {:require :asc
+          :import  :desc
+          :source-paths ["src"]}
 
   :profiles
   {:uberjar       {:omit-source    true

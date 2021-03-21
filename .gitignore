@@ -16,3 +16,29 @@ profiles.clj
 
 /node_modules
 /log
+
+/out/
+/resources/public/js/
+/resources/*.js
+/target/
+/*-init.clj
+/*.log
+
+# Leiningen
+/.lein-*
+/.nrepl-port
+
+# Node.js dependencies
+/node_modules/
+
+# shadow-cljs cache, port files
+/.shadow-cljs/
+.idea/
+
+.clj-kondo/.cache
+
+# cache directory for dependencies installed with deps.edn
+.cpcache
+
+# Mac OS files
+.DS_Store
