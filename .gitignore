@@ -42,3 +42,4 @@ profiles.clj
 
 # Mac OS files
 .DS_Store
+athens-sync.iml

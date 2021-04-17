@@ -72,7 +72,7 @@
    :dev           [:project/dev :profiles/dev]
    :test          [:project/dev :project/test :profiles/test]
 
-   :project/dev   {:jvm-opts       ["-Dconf=dev-config.edn"]
+   :project/dev   {:jvm-opts       ["-Dconf=dev-config.edn" "-Xmx1g" "-server"]
                    :dependencies   [[prone "1.0.2"]
                                     [ring/ring-mock "0.3.0"]
                                     [ring/ring-devel "1.4.0"]

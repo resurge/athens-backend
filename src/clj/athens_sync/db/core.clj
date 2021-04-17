@@ -60,28 +60,28 @@
 
 ;; ADDRESS BEFORE MERGE
 (defstate ^{:on-reload :noop} dh-conn
-  :start
-  (let [transit-file "/Users/abhinav/Documents/personal/newx/index.transit"]
-       ;transit-file "/srv/init/index.transit"
-    (try
-      (let [_    (d/create-database cfg)
-            conn (d/connect cfg)]
-        (d/transact conn schema)
-        (->> transit-file
-             slurp dt/read-transit-str (into {}) :eavt
-             (mapcat (fn [[id attr val _txn sig?]]
-                       [[(if sig? :db/add :db/retract) id attr val]]))
-             (d/transact conn)))
-      (catch Exception _
-        (log/info "Db already exists")))
-    (d/connect cfg))
+          :start
+          (let [transit-file "/Users/abhinav/Documents/personal/newx/index.transit"]
+                ;transit-file "/srv/init/index.transit"
+            (try
+              (let [_    (d/delete-database cfg)
+                    _    (d/create-database cfg)
+                    conn (d/connect cfg)]
+                (d/transact conn schema)
+                (->> transit-file
+                     slurp dt/read-transit-str (into {}) :eavt
+                     (mapcat (fn [[id attr val _txn sig?]]
+                               [[(if sig? :db/add :db/retract) id attr val]]))
+                     (d/transact conn)))
+              (catch Exception _
+                (log/info "Db already exists")))
+            (d/connect cfg))
 
-  :stop
-  (when dh-conn
-    (d/release dh-conn)))
+          :stop
+          (when dh-conn
+            (d/release dh-conn)))
 
 
 (defn init-db!
   []
   (mount/start [#'dh-conn]))
-

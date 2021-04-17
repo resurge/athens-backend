@@ -115,9 +115,17 @@
 ;;--- Transaction related --
 
 
+(def !last-tx-uid (atom nil))
+
+
 (defmethod -event-msg-handler :dat.sync.client/tx
   [{:keys [?data]}]
-  (dat-s/apply-remote-tx! ?data))
+  (let [[user-uid tx-data] ?data]
+    ;; apply-remote-tx! is synchronous
+    ;; i.e once txn is done watch fn is triggered that broadcasts
+    ;; i.e we always know who triggered a txn broadcast
+    (reset! !last-tx-uid user-uid)
+    (dat-s/apply-remote-tx! tx-data)))
 
 
 (defn get-bootstrap-datoms
@@ -144,7 +152,8 @@
   "Send all transactions to all clients"
   [tx-report]
   (broadcast! [:dat.sync.client/recv-remote-tx
-               (dat-s/tx-report->datoms tx-report)]))
+               [@!last-tx-uid
+                (dat-s/tx-report->datoms tx-report)]]))
 
 
 (defn start-db-watch! []
