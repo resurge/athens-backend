@@ -6,7 +6,6 @@
     [clj-time.core :as time-c]
     [com.rpl.specter :as s]
     [compojure.core :refer (defroutes GET POST)]
-    [dat.sync.server]
     [datahike.api :as d]
     [ring.middleware.defaults :as ring-defaults]
     [taoensso.sente :as sente]

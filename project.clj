@@ -32,7 +32,6 @@
                  ;; db
                  [io.replikativ/datahike "0.3.3"]
                  [datascript-transit "0.3.0"]
-                 [datsync "0.0.1-alpha2-SNAPSHOT" :exclusions [datascript]]
 
                  ;; ds works
                  [com.rpl/specter "1.1.2"]

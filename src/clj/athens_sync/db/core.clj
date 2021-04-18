@@ -59,7 +59,7 @@
 
 
 ;; ADDRESS BEFORE MERGE
-(defstate ^{:on-reload :noop} dh-conn
+(defstate dh-conn
           :start
           (let [transit-file "/Users/abhinav/Documents/personal/newx/index.transit"]
                 ;transit-file "/srv/init/index.transit"
