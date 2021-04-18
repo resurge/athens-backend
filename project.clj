@@ -72,16 +72,6 @@
    :test          [:project/dev :project/test :profiles/test]
 
    :project/dev   {:jvm-opts       ["-Dconf=dev-config.edn" "-Xmx1g" "-server"]
-                   :dependencies   [[prone "1.0.2"]
-                                    [ring/ring-mock "0.3.0"]
-                                    [ring/ring-devel "1.4.0"]
-                                    [com.billpiel/sayid "0.0.16"]
-                                    [com.bhauman/rebel-readline "0.1.4"]
-                                    [vvvvalvalval/scope-capture "0.3.2"]
-                                    [vvvvalvalval/scope-capture-nrepl "0.3.1"]
-                                    [spyscope "0.1.6"]
-                                    [cider/cider-nrepl "0.25.1"]]
-
                    :source-paths   ["env/dev/clj"]
                    :resource-paths ["env/dev/resources"]
                    :repl-options   {:init-ns user

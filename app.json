@@ -1,0 +1,7 @@
+{
+  "name": "Athens backend",
+  "description": "Sync",
+  "repository": "https://github.com/athensresearch/athens-backend",
+  "logo": "https://node-js-sample.herokuapp.com/node.png",
+  "keywords": ["clojure"]
+}

@@ -57,8 +57,12 @@
 (defn apply-remote-tx!
   "Takes a client transaction and transacts it"
   [tx]
-  (let [tx (mapv (partial translate-tx-form
-                          @db/dh-conn tempid-map) tx)]
+  (let [tx (->> tx
+                (mapv (partial translate-tx-form
+                               @db/dh-conn tempid-map))
+                (remove #(and (contains? #{:db/retract :db/retractEntity}
+                                         (first %))
+                              (string? (second %)))))]
     (d/transact db/dh-conn tx)))
 
 

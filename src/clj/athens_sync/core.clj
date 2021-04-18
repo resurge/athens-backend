@@ -29,7 +29,7 @@
   :start
   (http-kit/run-server
     (var sync/main-ring-handler)
-    {:port 3010})
+    {:port (Integer/parseInt (System/getenv "PORT"))})
 
   :stop
   (http-server))
