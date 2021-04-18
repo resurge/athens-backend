@@ -1,6 +1,6 @@
 {
   "name": "Athens backend",
-  "description": "Sync",
+  "description": "A real time collaborative graph database for teams",
   "repository": "https://github.com/athensresearch/athens-backend",
   "logo": "https://node-js-sample.herokuapp.com/node.png",
   "keywords": ["clojure"]
