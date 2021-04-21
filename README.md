@@ -1,4 +1,15 @@
-# athens-sync
+# athens-backend
+
+## Development
+
+To start the project locally: `lein run`.
+
+You might want to specify HTTP port that backend will listen to.
+Default value is: 1337
+Provide your own port number via command line option `-p/--http-port`
+or environment variable `HTTP_PORT`.
+
+
 
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 

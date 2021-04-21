@@ -21,7 +21,8 @@
 
 
 (def cli-options
-  [["-p" "--port PORT" "Port number"
+  [["-p" "--http-port HTTP_PORT" "HTTP Port number"
+    :default 1337
     :parse-fn #(Integer/parseInt %)]])
 
 
@@ -29,7 +30,7 @@
   :start
   (http-kit/run-server
     (var sync/main-ring-handler)
-    {:port (Integer/parseInt (System/getenv "PORT"))})
+    {:port (get-in env [:options :http-port])})
 
   :stop
   (http-server))
@@ -57,11 +58,12 @@
   (sync/start-router!)
   (sync/start-broadcast-ticker!)
   (sync/start-db-watch!)
-  (doseq [component (-> args
-                        (parse-opts cli-options)
-                        mount/start-with-args
-                        :started)]
-    (log/info component "started"))
+  (let [parsed-args (parse-opts args cli-options)]
+    (log/info :parsed-args (pr-str parsed-args))
+    (doseq [component (-> parsed-args
+                          mount/start-with-args
+                          :started)]
+      (log/info component "started")))
   (.addShutdownHook (Runtime/getRuntime) (Thread. stop-app)))
 
 (defn -main [& args]
