@@ -1,0 +1,10 @@
+[Unit]
+Description=Daemontools monitor to scan
+
+[Service]
+ExecStart=/bin/bash -cf '/command/svscanboot &'
+Type=oneshot
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

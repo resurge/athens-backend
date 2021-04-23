@@ -57,7 +57,7 @@
     :db/cardinality :db.cardinality/one}])
 
 
-(def DATAHIKE-DB-PATH "srv/db/athens-sync")
+(def DATAHIKE-DB-PATH "~/athens/db/athens-sync")
 
 
 (def cfg {:store {:backend :file :path DATAHIKE-DB-PATH}})

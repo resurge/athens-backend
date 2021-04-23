@@ -1,0 +1,9 @@
+#!/bin/bash
+
+exec 2>&1
+
+CMD="java -server -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:~/athens/log/gc-athens-$(date +%s).log -XX:+HeapDumpOnOutOfMemoryError -XX:-OmitStackTraceInFastThrow -Xmx1024m -jar /root/athens/app/athens-backend.jar -Dnrepl-port=7000"
+
+export NREPL_PORT=7000
+
+exec setuidgid root $CMD
