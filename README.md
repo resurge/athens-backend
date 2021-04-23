@@ -2,7 +2,7 @@
 
 ## Development
 
-To start the project locally: `lein run`.
+To start the project locally: [install Clojure](https://purelyfunctional.tv/guide/how-to-install-clojure/), clone the repo, and run `lein run`.
 
 You might want to specify HTTP port that backend will listen to.
 Default value is: 1337
