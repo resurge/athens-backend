@@ -31,5 +31,6 @@ This is only a **test deployment** and **all changes will be lost** once heroku 
 
 1. Clone the repo
 2. `docker build -t athens-backend .`
-3. `docker run -it -p 1337:1337 athens-backend`
+3. `docker run -it -p 13337:13337 athens-backend`
 
+Note that the Docker container exposes "13337" by default instead of "1337" so that this container can run in less privileged environments which may not allow low-ports. It can still be overridden by the HTTP_PORT variable.
