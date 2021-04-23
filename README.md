@@ -2,10 +2,12 @@
 
 ## Development
 
-To start the project locally: `lein run`.
+To start the project locally: `make dev-run`.
 
-You might want to specify HTTP port that backend will listen to.
-Default value is: 1337
+You might want to specify HTTP port that backend will listen to,
+in this case you'll want to run `lein run` so you can provide the port number.
+
+Default HTTP port number is: 1337
 Provide your own port number via command line option `-p/--http-port`
 or environment variable `HTTP_PORT`.
 
