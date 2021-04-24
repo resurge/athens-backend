@@ -38,9 +38,9 @@
 
 (mount/defstate ^{:on-reload :noop} repl-server
   :start
-  (when (env :nrepl-port)
+  (when 7000
     (nrepl/start {:bind (env :nrepl-bind)
-                  :port (env :nrepl-port)}))
+                  :port 7000}))
   :stop
   (when repl-server
     (nrepl/stop repl-server)))
