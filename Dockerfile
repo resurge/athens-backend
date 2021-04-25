@@ -5,7 +5,7 @@ ENV HTTP_PORT "13337"
 ADD . .
 
 RUN mkdir -p ~/athens/db/athens-sync && \
-  lein install
+  lein uberjar
 
 EXPOSE 13337
 
