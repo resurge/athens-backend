@@ -101,12 +101,15 @@
         (->> id (d/pull db-after
                         '[{:block/children [*]}])
              :block/children
+             (map (fn [{:block/keys [order] :as child}]
+                    (assoc child :block/order (or order 0))))
              (sort-by :block/order))
 
         monotonous-inc? (every? #{1} (map #(- (:block/order %1)
                                               (:block/order %2))
                                           (rest children) children))]
-    (when-not monotonous-inc?
+    (when (and (seq children)
+               (not monotonous-inc?))
       (let [ids-that-changed (set/intersection
                                (get-all-ids-involved tx-report)
                                (->> children (map :db/id) set))
@@ -129,14 +132,14 @@
   "Takes a client transaction and transacts it"
   [tx]
   (let [tx (->> tx
-                (mapv (partial translate-tx-form
-                               @db/dh-conn tempid-map))
-                (remove #(and (contains? #{:db/retract :db/retractEntity}
-                                         (first %))
-                              (string? (second %)))))
+             (mapv (partial translate-tx-form
+                            @db/dh-conn tempid-map))
+             (remove #(and (contains? #{:db/retract :db/retractEntity}
+                                      (first %))
+                           (string? (second %)))))
 
         {:keys [tempids] :as tx-report} (d/with @db/dh-conn tx)
-        eid->temp (set/map-invert tempids)
+        temp-id->eid (set/map-invert tempids)
         changed-ids (get-all-ids-involved (d/with @db/dh-conn tx))]
     (d/transact db/dh-conn
                 (->> (concat tx
@@ -147,7 +150,8 @@
                                 check-children-order]))
                      (remove nil?)
                      (map (fn [[op e a v]]
-                            [op (or (eid->temp e) e) a (or (eid->temp v) v)]))))))
+                            [op (or (temp-id->eid e) e)
+                             a (or (temp-id->eid v) v)]))))))
 
 
 (defn tx-report->datoms
