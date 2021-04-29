@@ -9,7 +9,9 @@ Default value is: 1337
 Provide your own port number via command line option `-p/--http-port`
 or environment variable `HTTP_PORT`.
 
+## Deployment
 
+### Heroku
 
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
@@ -24,3 +26,11 @@ Steps to test out **Real time collaboration**
 #### Important Note
 
 This is only a **test deployment** and **all changes will be lost** once heroku dyno reloads(which happens once a day atleast)
+
+### Docker
+
+1. Clone the repo
+2. `docker build -t athens-backend .`
+3. `docker run -it -p 13337:13337 athens-backend`
+
+Note that the Docker container exposes "13337" by default instead of "1337" so that this container can run in less privileged environments which may not allow low-ports. It can still be overridden by the HTTP_PORT variable.

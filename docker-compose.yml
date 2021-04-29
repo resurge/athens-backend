@@ -1,0 +1,8 @@
+version: '3.3'
+services:
+    athens-backend:
+        ports:
+            - '13337:13337'
+        volumes:
+            - '/root/athens/db/athens-sync:/tmp/athens'
+        image: 'erulabs/athens-backend:latest'
