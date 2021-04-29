@@ -11,4 +11,4 @@ EXPOSE 13337
 
 VOLUME ["/root/athens/db/athens-sync"]
 
-ENTRYPOINT ["lein", "run"]
+ENTRYPOINT ["java", "-jar", "./target/uberjar/athens-backend.jar"]
