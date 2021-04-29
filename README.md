@@ -9,11 +9,15 @@
 6. Add your server's URL address or IP, including the default port 1337 `example.athens-backend.com:1337`
 7. Add the default token : `x` (single letter).
 
-#### Notes
+### Notes
+
 * The same steps exactly can be used to test out Real Time Collaboration on your own server
 * You can specify the HTTP port on which you want the backend to listen to, using the command line option `-p/--http-port` or environment variable `HTTP_PORT`
 
-## Steps to test out **Real Time Collaboration** with Heroku
+## Deployment
+
+### Heroku
+
 
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
@@ -27,3 +31,11 @@
 
 This is only a **test deployment** and **all changes will be lost** once heroku dyno reloads(which happens once a day atleast)
 
+
+### Docker
+
+1. Clone the repo
+2. `docker build -t athens-backend .`
+3. `docker run -it -p 13337:13337 athens-backend`
+
+Note that the Docker container exposes "13337" by default instead of "1337" so that this container can run in less privileged environments which may not allow low-ports. It can still be overridden by the HTTP_PORT variable.
