@@ -19,7 +19,7 @@ sed -i 's/extern int errno/#include <errno.h>\n/' src/error.h
 
 # setup paths
 cd $proj_dir
-mkdir -p ~/athens/db/athens-sync
+mkdir -p ~/athens/db/athens-backend
 mkdir -p ~/athens/app
 mkdir -p ~/athens/log/
 

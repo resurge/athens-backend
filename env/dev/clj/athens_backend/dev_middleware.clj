@@ -1,4 +1,4 @@
-(ns athens-sync.dev-middleware
+(ns athens-backend.dev-middleware
   (:require
     [ring.middleware.reload :refer [wrap-reload]]))
 

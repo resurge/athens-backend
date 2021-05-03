@@ -1,4 +1,4 @@
-(defproject athens-sync "0.1.0-SNAPSHOT"
+(defproject athens-backend "0.1.0-SNAPSHOT"
 
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
@@ -50,7 +50,7 @@
   :test-paths ["test/clj"]
   :resource-paths ["resources"]
   :target-path "target/%s/"
-  :main ^:skip-aot athens-sync.core
+  :main ^:skip-aot athens-backend.core
 
   :plugins [[lein-pprint "1.3.2"]
             [lein-ancient "0.7.0"]

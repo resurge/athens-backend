@@ -4,5 +4,5 @@ services:
         ports:
             - '13337:13337'
         volumes:
-            - '/root/athens/db/athens-sync:/tmp/athens'
+            - '/root/athens/db/athens-backend:/tmp/athens'
         image: 'erulabs/athens-backend:latest'

@@ -1,9 +1,9 @@
-(ns athens-sync.core
+(ns athens-backend.core
   (:require
-    [athens-sync.config :refer [env]]
-    [athens-sync.db.core :as db]
-    [athens-sync.nrepl :as nrepl]
-    [athens-sync.routes.sync :as sync]
+    [athens-backend.config :refer [env]]
+    [athens-backend.db.core :as db]
+    [athens-backend.nrepl :as nrepl]
+    [athens-backend.routes.sync :as sync]
     [clojure.tools.cli :refer [parse-opts]]
     [mount.core :as mount]
     [org.httpkit.server :as http-kit]
@@ -30,7 +30,10 @@
   :start
   (http-kit/run-server
     (var sync/main-ring-handler)
-    {:port (get-in env [:options :http-port])})
+    ;; heroku sets sysenv as port to which app has to bind
+    ;; failing to bind to it will stop the process and
+    ;; the dyno completely
+    {:port (some #(get-in env %) [[:port] [:options :http-port]])})
 
   :stop
   (http-server))

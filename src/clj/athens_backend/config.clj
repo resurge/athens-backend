@@ -1,4 +1,4 @@
-(ns athens-sync.config
+(ns athens-backend.config
   (:require
     [cprop.core :refer [load-config]]
     [cprop.source :as source]

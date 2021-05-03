@@ -1,4 +1,4 @@
-(ns athens-sync.db.core
+(ns athens-backend.db.core
   (:require [clojure.java.shell :refer [sh]]
             [datahike.api :as d]
             [datascript.transit :as dt]
@@ -57,7 +57,7 @@
     :db/cardinality :db.cardinality/one}])
 
 
-(def DATAHIKE-DB-PATH "~/athens/db/athens-sync")
+(def DATAHIKE-DB-PATH "~/athens/db/athens-backend")
 
 
 (def cfg {:store {:backend :file :path DATAHIKE-DB-PATH}})

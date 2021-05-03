@@ -1,4 +1,4 @@
-(ns athens-sync.nrepl
+(ns athens-backend.nrepl
   (:require
     [nrepl.server :as nrepl]
     [taoensso.timbre :as log]))

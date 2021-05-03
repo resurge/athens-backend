@@ -1,7 +1,7 @@
-(ns athens-sync.routes.sync
+(ns athens-backend.routes.sync
   (:require
-    [athens-sync.datsync-utils :as dat-s]
-    [athens-sync.db.core :as db]
+    [athens-backend.datsync-utils :as dat-s]
+    [athens-backend.db.core :as db]
     [clj-time.coerce :as time-co]
     [clj-time.core :as time-c]
     [com.rpl.specter :as s]

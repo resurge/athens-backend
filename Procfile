@@ -1,1 +1,1 @@
-web: java -Dclojure.main.report=stderr -cp target/uberjar/athens-sync.jar clojure.main -m athens-sync.core
+web: java -Dclojure.main.report=stderr -cp target/uberjar/athens-backend.jar clojure.main -m athens-backend.core

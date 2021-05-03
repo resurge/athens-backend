@@ -1,6 +1,6 @@
-(ns athens-sync.datsync-utils
+(ns athens-backend.datsync-utils
   (:require
-    [athens-sync.db.core :as db]
+    [athens-backend.db.core :as db]
     [datahike.api :as d]))
 
 
